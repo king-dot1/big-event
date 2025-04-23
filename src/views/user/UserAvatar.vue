@@ -12,13 +12,17 @@ const btnLoading = ref(false)
 
 // 预览图片地址
 const imageUrl = ref(userStore.userInfo.user_pic || '')
-// 上传状态
+// 上传按钮禁用 -状态
 const avatarState = ref(true)
 
 // 图片状态改变
 const handleChange = (uploadFile) => {
+  const reader = new FileReader()
+  reader.readAsDataURL(uploadFile.raw)
+  reader.onloadend = () => {
+    imageUrl.value = reader.result
+  }
   // 将上传的文件转成图片预览的地址
-  imageUrl.value = URL.createObjectURL(uploadFile.raw)
   avatarState.value = false
 }
 
@@ -31,32 +35,17 @@ const handleSelectAvatar = () => {
 
 // 上传头像
 const handleUploading = async () => {
-  // 1. 根据 blob URL 获取 Blob 对象
-  const response = await fetch(imageUrl.value)
-  const blob = await response.blob()
-
-  // 2. 创建 FileReader 实例
-  const reader = new FileReader()
-  // 3. 读取 Blob 对象
-  reader.readAsDataURL(blob)
-  // 4. 监听读取完成事件
-  reader.onloadend = async () => {
-    // 确保得到完整的data:image格式的Base64字符串
-    const dataUrl = reader.result
-    const base64 = 'data:image/jpeg;base64,' + dataUrl.split(',')[1]
-
-    btnLoading.value = true
-    // 这里可以继续处理 base64 编码的数据，例如发送到服务器
-    await userUpdateAvatarService(base64)
-    btnLoading.value = false
-    avatarState.value = true
-    // 更新 pinia 中的用户信息, 重新渲染数据
-    userStore.getUserInfo()
-    ElMessage({
-      type: 'success',
-      message: '更换头像成功'
-    })
-  }
+  btnLoading.value = true
+  // 这里可以继续处理 base64 编码的数据，例如发送到服务器
+  await userUpdateAvatarService(imageUrl.value)
+  btnLoading.value = false
+  avatarState.value = true
+  // 更新 pinia 中的用户信息, 重新渲染数据
+  userStore.getUserInfo()
+  ElMessage({
+    type: 'success',
+    message: '更换头像成功'
+  })
 }
 </script>
 
