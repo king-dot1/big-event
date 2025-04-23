@@ -50,6 +50,10 @@ const onAddManage = () => {
 const onEditManage = (row) => {
   drawerRef.value.open(row)
 }
+// 预览
+const onPreviewManage = (row) => {
+  drawerRef.value.open(row)
+}
 // 删除
 const onDeleteManage = async (row) => {
   await ElMessageBox.confirm('你确认删除该文章信息吗？', '温馨提示', {
@@ -103,9 +107,12 @@ const onSuccess = (type) => {
     <el-table v-loading="loading" :data="tableData" style="width: 100%">
       <el-table-column prop="title" label="文章标题">
         <template #default="scope">
-          <el-link :underline="false" type="primary">{{
-            scope.row.title
-          }}</el-link>
+          <el-link
+            @click="onPreviewManage(scope.row)"
+            :underline="false"
+            type="primary"
+            >{{ scope.row.title }}</el-link
+          >
         </template>
       </el-table-column>
       <el-table-column prop="cate_name" label="分类" />

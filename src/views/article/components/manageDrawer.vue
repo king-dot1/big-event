@@ -28,6 +28,7 @@ const formModel = ref({ ...defaultForm })
 const imageUrl = ref('') // 图片预览的地址
 const publishLoad = ref(false) // 发布按钮的loading
 const draftLoad = ref(false) // 草稿按钮的loading
+const preview = ref(true) // 是否是预览 默认不是 渲染
 
 // 图片状态改变
 const handleChange = (uploadFile) => {
@@ -217,7 +218,8 @@ defineExpose({
           ></quill-editor>
         </div>
       </el-form-item>
-      <el-form-item>
+      <!-- 判断是否是文章预览 -->
+      <el-form-item v-if="preview">
         <el-button
           :loading="publishLoad"
           type="primary"

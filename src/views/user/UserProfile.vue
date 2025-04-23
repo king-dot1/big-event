@@ -24,9 +24,11 @@ const rules = {
 
 // 按钮加载状态
 const btnLoading = ref(false)
-
+const formRef = ref()
 // 提交表单
 const handleSubmit = async () => {
+  // 表单验证
+  await formRef.value.validate()
   // 调用接口更新用户信息
   try {
     btnLoading.value = true
@@ -55,6 +57,7 @@ const handleSubmit = async () => {
           :rules="rules"
           label-width="100px"
           size="large"
+          ref="formRef"
         >
           <el-form-item label="登录名称">
             <el-input v-model="formModel.username" :disabled="true"></el-input>
