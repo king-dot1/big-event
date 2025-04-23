@@ -26,6 +26,8 @@ const formRef = ref()
 const formModel = ref({ ...defaultForm })
 // 图片预览
 const imageUrl = ref('') // 图片预览的地址
+const publishLoad = ref(false) // 发布按钮的loading
+const draftLoad = ref(false) // 草稿按钮的loading
 
 // 图片状态改变
 const handleChange = (uploadFile) => {
@@ -79,11 +81,13 @@ const handleSubmit = async (state) => {
   for (const key in formModel.value) {
     formData.append(key, formModel.value[key])
   }
-
+  state === '已发布' ? (publishLoad.value = true) : (draftLoad.value = true)
   // 发起请求
   if (formModel.value.id) {
     // 更新
     await ArticleUpdateService(formData)
+    publishLoad.value = false
+    draftLoad.value = false
 
     ElMessage({
       message: '更新文章成功',
@@ -93,21 +97,17 @@ const handleSubmit = async (state) => {
     emit('success', 'edit')
   } else {
     // 添加
-    if (state === '已发布') {
-      await ArticlePublishService(formData)
-      ElMessage({
-        message: '发布文章成功',
-        type: 'success'
-      })
+    await ArticlePublishService(formData)
+    publishLoad.value = false
+    draftLoad.value = false
 
-      // 成功给父组件发送事件，让父组件重新请求数据
-      emit('success', 'add')
-    } else {
-      ElMessage({
-        message: '保存文章成功',
-        type: 'success'
-      })
-    }
+    ElMessage({
+      message: '添加文章成功',
+      type: 'success'
+    })
+
+    // 成功给父组件发送事件，让父组件重新请求数据
+    emit('success', 'add')
   }
 
   drawer.value = false
@@ -218,10 +218,15 @@ defineExpose({
         </div>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="handleSubmit('已发布')"
+        <el-button
+          :loading="publishLoad"
+          type="primary"
+          @click="handleSubmit('已发布')"
           >发布</el-button
         >
-        <el-button @click="handleSubmit('草稿')">草稿</el-button>
+        <el-button :loading="draftLoad" @click="handleSubmit('草稿')"
+          >草稿</el-button
+        >
       </el-form-item>
     </el-form>
   </el-drawer>
