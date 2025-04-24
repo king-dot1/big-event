@@ -33,7 +33,10 @@ const handleSubmit = async () => {
   try {
     btnLoading.value = true
     await userUserinfoService(formModel.value)
+    // 更新 pinia 中的用户信息, 重新渲染数据
+    await userStore.getUserInfo()
     btnLoading.value = false
+
     ElMessage({
       type: 'success',
       message: '修改成功'
@@ -41,8 +44,6 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error(error)
   }
-  // 更新 pinia 中的用户信息, 重新渲染数据
-  userStore.getUserInfo()
 }
 </script>
 

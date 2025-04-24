@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { useUserStore } from '@/stores/index'
 
 // createRouter 创建路由实例
@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/index'
 // hash模式：createWebHashHistory()
 // import.meta.env.BASE_URL是路由的基础路径；默认 '/'
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/login',

@@ -11,6 +11,7 @@ import {
 } from '@/api/article'
 import { baseURL } from '@/utils/request'
 import axios from 'axios'
+import { formatDate } from '@/utils/format'
 
 const drawer = ref(false) // 控制抽屉的显示与隐藏
 const defaultForm = {
@@ -28,7 +29,8 @@ const formModel = ref({ ...defaultForm })
 const imageUrl = ref('') // 图片预览的地址
 const publishLoad = ref(false) // 发布按钮的loading
 const draftLoad = ref(false) // 草稿按钮的loading
-const preview = ref(true) // 是否是预览 默认不是 渲染
+const preview = ref(false) // 是否是预览 默认不是 渲染
+const previewLoad = ref(false) // 预览的loading
 
 // 图片状态改变
 const handleChange = (uploadFile) => {
@@ -116,19 +118,28 @@ const handleSubmit = async (state) => {
 
 const editorRef = ref(null)
 
+let title = ref('')
 // 判断是编辑还是发布
-const open = async (row) => {
+const open = async (row, t) => {
+  // 重置表单数据
+  formModel.value = { ...defaultForm }
+  imageUrl.value = ''
+  // 标题
+  title.value = t
   drawer.value = true
-
   // 重置表单校验
   formRef.value?.clearValidate()
-
   if (row?.id) {
-    // 编辑
+    // 编辑/预览
+    // 开启预览的 loading
+    previewLoad.value = true
+    preview.value = t === '预览文章'
     const res = await ArticleInfoService(row.id)
     formModel.value = res.data.data
     // 将文件字符串转为文件对象
     imageUrl.value = baseURL + formModel.value.cover_img
+    // 关闭预览的 loading
+    previewLoad.value = false
 
     // 调用方法
     formModel.value.cover_img = await urlToFile(
@@ -173,10 +184,11 @@ defineExpose({
 </script>
 
 <template>
+  <!-- "formModel.cate_id ? '编辑文章' : '发布文章'" -->
   <el-drawer
     class="manage-drawer"
     v-model="drawer"
-    :title="formModel.cate_id ? '编辑文章' : '发布文章'"
+    :title="title"
     direction="rtl"
     size="50%"
   >
@@ -185,6 +197,7 @@ defineExpose({
       label-width="100px"
       :rules="rules"
       :model="formModel"
+      v-if="!preview"
     >
       <el-form-item label="文章标题" prop="title">
         <el-input
@@ -218,8 +231,7 @@ defineExpose({
           ></quill-editor>
         </div>
       </el-form-item>
-      <!-- 判断是否是文章预览 -->
-      <el-form-item v-if="preview">
+      <el-form-item>
         <el-button
           :loading="publishLoad"
           type="primary"
@@ -231,6 +243,26 @@ defineExpose({
         >
       </el-form-item>
     </el-form>
+    <!-- 预览 -->
+    <div v-loading="previewLoad" v-else>
+      <h1>{{ formModel.title }}</h1>
+      <div>
+        <span class="padding-r-10"
+          >作者: {{ formModel.nickname || formModel.username }}
+        </span>
+        <span class="padding-r-10"
+          >时间: {{ formatDate(formModel.pub_date) }}
+        </span>
+        <span>文章分类: {{ formModel.cate_name }} </span>
+      </div>
+      <hr />
+      <div class="imgUrl">
+        <img :src="imageUrl" alt="图片" />
+      </div>
+      <div class="content">
+        <p v-html="formModel.content"></p>
+      </div>
+    </div>
   </el-drawer>
 </template>
 
@@ -267,6 +299,19 @@ defineExpose({
     width: 100%;
     :deep(.ql-editor) {
       min-height: 200px;
+    }
+  }
+  // 预览
+  .padding-r-10 {
+    padding-right: 30px;
+  }
+  .imgUrl {
+    width: 400px;
+    height: 280px;
+    margin: 16px 0;
+    img {
+      width: 100%;
+      height: 100%;
     }
   }
 }

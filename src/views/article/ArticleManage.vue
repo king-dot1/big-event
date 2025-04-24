@@ -44,15 +44,15 @@ const reset = () => {
 const drawerRef = ref()
 // 发布
 const onAddManage = () => {
-  drawerRef.value.open()
+  drawerRef.value.open({}, '发布文章')
 }
 // 编辑
 const onEditManage = (row) => {
-  drawerRef.value.open(row)
+  drawerRef.value.open(row, '编辑文章')
 }
 // 预览
 const onPreviewManage = (row) => {
-  drawerRef.value.open(row)
+  drawerRef.value.open(row, '预览文章')
 }
 // 删除
 const onDeleteManage = async (row) => {

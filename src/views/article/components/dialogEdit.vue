@@ -4,6 +4,9 @@ import { ArticleEditService, ArticleAddService } from '@/api/article'
 
 const dialogVisible = ref(false)
 const formRef = ref()
+// 确定按钮的loading
+const btnLoading = ref(false)
+
 // 表单数据
 const formModel = ref({
   cate_name: '',
@@ -62,11 +65,13 @@ const emit = defineEmits(['success'])
 
 const onArticleAdd = async () => {
   await formRef.value.validate()
-
+  btnLoading.value = true
   // 判断是编辑还是添加
   formModel.value.id
     ? await ArticleEditService(formModel.value)
     : await ArticleAddService(formModel.value)
+
+  btnLoading.value = false
   ElMessage({
     message: formModel.value.id ? '编辑成功' : '添加成功',
     type: 'success'
@@ -100,7 +105,9 @@ defineExpose({
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="onArticleAdd"> 确定 </el-button>
+        <el-button type="primary" @click="onArticleAdd" :loading="btnLoading">
+          确定
+        </el-button>
       </span>
     </template>
   </el-dialog>

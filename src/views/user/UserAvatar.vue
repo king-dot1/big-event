@@ -4,6 +4,7 @@ import defaultAvatar from '@/assets/avatar.jpg'
 import { Upload, Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores'
 import { userUpdateAvatarService } from '@/api/user'
+import { uploadCompressedImage } from '@/utils/uploadCompressedImage'
 
 const fileInput = ref(null)
 const userStore = useUserStore()
@@ -16,12 +17,26 @@ const imageUrl = ref(userStore.userInfo.user_pic || '')
 const avatarState = ref(true)
 
 // 图片状态改变
-const handleChange = (uploadFile) => {
-  const reader = new FileReader()
-  reader.readAsDataURL(uploadFile.raw)
-  reader.onloadend = () => {
-    imageUrl.value = reader.result
+const handleChange = async (uploadFile) => {
+  // const reader = new FileReader()
+  // reader.readAsDataURL(uploadFile.raw)
+  // reader.onloadend = () => {
+  //   // 将 base64 编码的数据赋值给 imageUrl
+  //   imageUrl.value = reader.result
+  // }
+  try {
+    // 压缩图片 并转 Base64 编码
+    const compressedBase64 = await uploadCompressedImage(uploadFile.raw)
+    imageUrl.value = compressedBase64
+  } catch (error) {
+    console.log('选择图片失败', error)
+
+    ElMessage({
+      type: 'success',
+      message: '选择图片失败，请重新上传！'
+    })
   }
+
   // 将上传的文件转成图片预览的地址
   avatarState.value = false
 }
@@ -36,16 +51,25 @@ const handleSelectAvatar = () => {
 // 上传头像
 const handleUploading = async () => {
   btnLoading.value = true
-  // 这里可以继续处理 base64 编码的数据，例如发送到服务器
-  await userUpdateAvatarService(imageUrl.value)
-  btnLoading.value = false
+  try {
+    // 这里可以继续处理 base64 编码的数据，例如发送到服务器
+    await userUpdateAvatarService(imageUrl.value)
+    // 更新 pinia 中的用户信息, 重新渲染数据
+    await userStore.getUserInfo()
+
+    ElMessage({
+      type: 'success',
+      message: '更换头像成功'
+    })
+  } catch (error) {
+    console.log('上传头像请求失败', error)
+    ElMessage({
+      type: 'error',
+      message: '上传头像失败,请重新上传！'
+    })
+  }
   avatarState.value = true
-  // 更新 pinia 中的用户信息, 重新渲染数据
-  userStore.getUserInfo()
-  ElMessage({
-    type: 'success',
-    message: '更换头像成功'
-  })
+  btnLoading.value = false
 }
 </script>
 
