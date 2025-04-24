@@ -129,11 +129,12 @@ const open = async (row, t) => {
   drawer.value = true
   // 重置表单校验
   formRef.value?.clearValidate()
+  preview.value = t === '预览文章'
   if (row?.id) {
     // 编辑/预览
     // 开启预览的 loading
     previewLoad.value = true
-    preview.value = t === '预览文章'
+
     const res = await ArticleInfoService(row.id)
     formModel.value = res.data.data
     // 将文件字符串转为文件对象
@@ -159,13 +160,10 @@ const urlToFile = async (url, fileName) => {
   try {
     // 使用axios发送请求，配置 responseType 为 'arraybuffer'，以二进制数组形式接收响应数据
     const response = await axios.get(url, { responseType: 'arraybuffer' })
-
     // 从响应头中获取 Content-Type 信息，用于创建 Blob 对象
     const contentType = response.headers['content-type']
-
     // 创建 Blod 对象，将响应数据和 Content-Type 传入
     const blob = new Blob([response.data], { type: contentType })
-
     // 创建 File 对象，将 Blob 对象作为第一个参数，文件名作为第二个参数
     const file = new File([blob], fileName, { type: contentType })
     return file
